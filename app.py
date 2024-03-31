@@ -6,6 +6,13 @@ import numpy as np
 from googletrans import Translator
 from gtts import gTTS
 import cv2
+import os
+
+def create_directories():
+    if not os.path.exists("image"):
+        os.makedirs("image")
+    if not os.path.exists("audio"):
+        os.makedirs("audio")
 
 #preprocessing 
 def grayscale(img):
@@ -70,6 +77,7 @@ def translation(text, dest):
     return translated_text.text
 
 def main(rerunable):
+    create_directories()
     st.title("OCR based Language Translator")
 
     st.sidebar.write("Upload an image by clicking on the 'Browse files' button")
