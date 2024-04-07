@@ -157,35 +157,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# st.sidebar.write("Click below to start recording audio:")
-#         if st.sidebar.button("Start Recording"):
-#             fs = 44100  # Sample rate
-#             seconds = 5  # Duration of recording
-
-#             recording_placeholder = st.empty()
-#             recording_placeholder.text("Recording...")
-
-#             myrecording = sd.rec(int(seconds * fs), samplerate=fs, channels=2)
-#             sd.wait()  # Wait until recording is finished
-
-#             recording_placeholder.empty()
-
-#             audio_path = "audio/audio.wav"
-#             sf.write(audio_path, myrecording, fs)
-
-#             recognizer = sr.Recognizer()
-#             with sr.AudioFile(audio_path) as source:
-#                 audio_data = recognizer.record(source)
-#                 transcribed_text = recognizer.recognize_google(audio_data, language=src_lang)
-
-#             st.subheader('Transcribed Text')
-#             st.write(transcribed_text)
-
-#             translated_text = translation(transcribed_text, src_lang, dest_lang)
-
-#             st.subheader('Translated Text')
-#             st.write(translated_text)
-
-#             tts_audio_path = text_to_speech(translated_text, "audio/tts.mp3")
-#             st.audio(tts_audio_path, format="audio/mp3")
