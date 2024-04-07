@@ -127,42 +127,65 @@ def main():
         dest_lang_codes = {'English': 'en', 'हिंदी': 'hi', 'मराठी': 'mr', 'Spanish': 'es', 'French': 'fr', 'German': 'de', 'Italian': 'it'}
         dest_lang = dest_lang_codes[selected_language]
         
-        start_button = st.sidebar.button("Start Recording")
-        if start_button:
-            fs = 44100
-
+        st.sidebar.write("Click below to start recording audio:")
+        if st.sidebar.button("Start Recording"):
             recording_placeholder = st.empty()
             recording_placeholder.text("Recording...")
 
-            audio_path = "audio/audio.wav"
-            myrecording = []
-
-            finish_button = st.sidebar.button("Finish Recording")
-            while not finish_button:
-                myrecording.extend(sd.rec(int(fs / 10), samplerate=fs, channels=2).tolist())
-                
-            sd.wait()
-            
-            recording_placeholder.empty()
-
-            myrecording = np.array(myrecording)
-            sf.write(audio_path, myrecording, fs)
-
             recognizer = sr.Recognizer()
-            with sr.AudioFile(audio_path) as source:
-                audio_data = recognizer.record(source)
-                transcribed_text = recognizer.recognize_google(audio_data, language=src_lang)
+            with sr.Microphone() as source:
+                recognizer.pause_threshold = 1
+                audio = recognizer.listen(source) 
+  
+            try:
+                recording_placeholder.empty()
+                transcribed_text = recognizer.recognize_google(audio, language=src_lang)
 
-            st.subheader('Transcribed Text')
-            st.write(transcribed_text)
+                st.subheader('Transcribed Text')
+                st.write(transcribed_text)
 
-            translated_text = translation(transcribed_text, dest_lang)
+                translated_text = translation(transcribed_text, dest_lang)
 
-            st.subheader('Translated Text')
-            st.write(translated_text)
+                st.subheader('Translated Text')
+                st.write(translated_text)
 
-            tts_audio_path = text_to_speech(translated_text, "audio/tts.mp3")
-            st.audio(tts_audio_path, format="audio/mp3")
+                tts_audio_path = text_to_speech(translated_text, "audio/tts.mp3")
+                st.audio(tts_audio_path, format="audio/mp3")
+
+            except Exception: 
+                st.write("Error: Unable to transcribe audio.")
 
 if __name__ == "__main__":
     main()
+
+# st.sidebar.write("Click below to start recording audio:")
+#         if st.sidebar.button("Start Recording"):
+#             fs = 44100  # Sample rate
+#             seconds = 5  # Duration of recording
+
+#             recording_placeholder = st.empty()
+#             recording_placeholder.text("Recording...")
+
+#             myrecording = sd.rec(int(seconds * fs), samplerate=fs, channels=2)
+#             sd.wait()  # Wait until recording is finished
+
+#             recording_placeholder.empty()
+
+#             audio_path = "audio/audio.wav"
+#             sf.write(audio_path, myrecording, fs)
+
+#             recognizer = sr.Recognizer()
+#             with sr.AudioFile(audio_path) as source:
+#                 audio_data = recognizer.record(source)
+#                 transcribed_text = recognizer.recognize_google(audio_data, language=src_lang)
+
+#             st.subheader('Transcribed Text')
+#             st.write(transcribed_text)
+
+#             translated_text = translation(transcribed_text, src_lang, dest_lang)
+
+#             st.subheader('Translated Text')
+#             st.write(translated_text)
+
+#             tts_audio_path = text_to_speech(translated_text, "audio/tts.mp3")
+#             st.audio(tts_audio_path, format="audio/mp3")
