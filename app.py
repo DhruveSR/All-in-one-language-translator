@@ -9,7 +9,6 @@ import os
 import sounddevice as sd
 import soundfile as sf
 import speech_recognition as sr
-import time
 
 def create_directories():
     if not os.path.exists("image"):
@@ -56,7 +55,7 @@ def prepro(img_path):
     cv2.imwrite(img_path, thin_img)
 
 def ocr(img):
-    reader = easyocr.Reader(['en', 'hi', 'mr'+ 'es', 'fr', 'de', 'it'])
+    reader = easyocr.Reader(['en', 'hi', 'mr'])
 
     img = np.array(img)
 
@@ -86,10 +85,10 @@ def main():
     action = st.sidebar.radio("", ('OCR', 'Translate Audio'))
 
     if action == 'OCR':
-        selected_language = st.sidebar.multiselect("Select Language", ['English', 'हिंदी', 'मराठी', 'Spanish', 'French', 'German', 'Italian'])
-        lang_codes = {'English': 'en', 'हिंदी': 'hi', 'मराठी': 'mr', 'Spanish': 'es', 'French': 'fr', 'German': 'de', 'Italian': 'it'}
+        selected_language = st.sidebar.multiselect("Select Language", ['English', 'हिंदी', 'मराठी'])
+        lang_codes = {'English': 'en', 'हिंदी': 'hi', 'मराठी': 'mr'}
         if selected_language:
-            lang = [lang_codes[lang] for lang in selected_language]
+            lang = [lang_codes[lang] for lang in selected_language if lang in lang_codes]
 
             st.sidebar.write("Upload an image by clicking on the 'Browse files' button")
             img = st.sidebar.file_uploader("Upload an image", type=["jpg", "png", "jpeg"], label_visibility='hidden')
@@ -101,7 +100,9 @@ def main():
                 img_path = "image/img.jpg"
                 img = Image.open(img)
                 img = img.save(img_path)
+
                 #prepro(img_path)
+                
                 img = cv2.imread(img_path)
 
                 text = ocr(img)
@@ -109,8 +110,8 @@ def main():
                 if text:
                     for l in lang:
                         trans_text = translation(text, l)
-                        
-                        st.subheader(f'Translated Text ({lang_codes[l]})')
+
+                        st.subheader(f'Translated Text ({l})')
                         st.write(trans_text)
 
                         audio_path = text_to_speech(trans_text, f"audio/tts_{l}.mp3")
@@ -119,12 +120,12 @@ def main():
                     st.warning("No text detected in the image.")
     
     elif action == 'Translate Audio':
-        selected_language = st.sidebar.selectbox("Select Original Language", ['English', 'हिंदी', 'मराठी', 'Spanish', 'French', 'German', 'Italian'])
-        src_lang_codes = {'English': 'en-US', 'हिंदी': 'hi-IN', 'मराठी': 'mr-IN', 'Spanish': 'es-ES', 'French': 'fr-FR', 'German': 'de-DE', 'Italian': 'it-IT'}
+        selected_language = st.sidebar.selectbox("Select Original Language", ['English', 'हिंदी', 'मराठी'])
+        src_lang_codes = {'English': 'en-US', 'हिंदी': 'hi-IN', 'मराठी': 'mr-IN'}
         src_lang = src_lang_codes[selected_language]
 
-        selected_language = st.sidebar.selectbox("Select Language to Translate", ['English', 'हिंदी', 'मराठी', 'Spanish', 'French', 'German', 'Italian'])
-        dest_lang_codes = {'English': 'en', 'हिंदी': 'hi', 'मराठी': 'mr', 'Spanish': 'es', 'French': 'fr', 'German': 'de', 'Italian': 'it'}
+        selected_language = st.sidebar.selectbox("Select Language to Translate", ['English', 'हिंदी', 'मराठी'])
+        dest_lang_codes = {'English': 'en', 'हिंदी': 'hi', 'मराठी': 'mr'}
         dest_lang = dest_lang_codes[selected_language]
         
         st.sidebar.write("Click below to start recording audio:")
