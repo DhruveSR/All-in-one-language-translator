@@ -6,8 +6,6 @@ from googletrans import Translator
 from gtts import gTTS
 import cv2
 import os
-import sounddevice as sd
-import soundfile as sf
 import speech_recognition as sr
 
 def create_directories():
@@ -82,43 +80,79 @@ def main():
     st.title("Language Translator")
 
     st.sidebar.write("Choose Action:")
-    action = st.sidebar.radio("", ('OCR', 'Translate Audio'))
+    action = st.sidebar.radio("", ('OCR', 'Translate Audio', 'Translate Text'))
 
     if action == 'OCR':
         selected_language = st.sidebar.multiselect("Select Language", ['English', 'हिंदी', 'मराठी'])
         lang_codes = {'English': 'en', 'हिंदी': 'hi', 'मराठी': 'mr'}
+        
         if selected_language:
             lang = [lang_codes[lang] for lang in selected_language if lang in lang_codes]
 
-            st.sidebar.write("Upload an image by clicking on the 'Browse files' button")
-            img = st.sidebar.file_uploader("Upload an image", type=["jpg", "png", "jpeg"], label_visibility='hidden')
-
-            if img and selected_language:
-                st.image(img, caption="Uploaded Image", width=200)
-                performing_placeholder = st.empty()
-                performing_placeholder.text("Performing OCR...")
-                img_path = "image/img.jpg"
-                img = Image.open(img)
-                img = img.save(img_path)
-
-                #prepro(img_path)
+            option = st.sidebar.radio("Select Input", ('Upload Image', 'Capture Image'))
+            
+            if option == 'Upload Image':
                 
-                img = cv2.imread(img_path)
+                st.sidebar.write("Upload an image by clicking on the 'Browse files' button")
+                img = st.sidebar.file_uploader("Upload an image", type=["jpg", "png", "jpeg"], label_visibility='hidden')
 
-                text = ocr(img)
+                if img:
+                    st.image(img, caption="Uploaded Image", width=200)
+                    performing_placeholder = st.empty()
+                    performing_placeholder.text("Performing OCR...")
+                    img_path = "image/img.jpg"
+                    img = Image.open(img)
+                    img = img.save(img_path)
 
-                if text:
-                    for l in lang:
-                        trans_text = translation(text, l)
+                    #prepro(img_path)
 
-                        st.subheader(f'Translated Text ({l})')
-                        st.write(trans_text)
+                    img = cv2.imread(img_path)
 
-                        audio_path = text_to_speech(trans_text, f"audio/tts_{l}.mp3")
-                        st.audio(audio_path, format="audio/mp3")
-                else:
-                    st.warning("No text detected in the image.")
+                    text = ocr(img)
+
+                    if text:
+                        for l in lang:
+                            trans_text = translation(text, l)
+
+                            st.subheader(f'Translated Text ({l})')
+                            st.write(trans_text)
+
+                            audio_path = text_to_speech(trans_text, f"audio/tts_{l}.mp3")
+                            st.audio(audio_path, format="audio/mp3")
+                    else:
+                        st.warning("No text detected in the image.")
     
+            elif option == 'Capture Image':
+                img_file_buffer = st.camera_input("Capture Image")
+
+                if img_file_buffer:
+
+                    performing_placeholder = st.empty()
+                    performing_placeholder.text("Performing OCR...")
+
+                    bytes_data = img_file_buffer.getvalue() 
+                    img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+
+                    img_path = "image/img.jpg"
+                    cv2.imwrite(img_path, img)
+
+                    #prepro(img_path)
+
+                    img = cv2.imread(img_path)
+                    text = ocr(img)
+
+                    if text:
+                        for l in lang:
+                            trans_text = translation(text, l)
+
+                            st.subheader(f'Translated Text ({l})')
+                            st.write(trans_text)
+
+                            audio_path = text_to_speech(trans_text, f"audio/tts_{l}.mp3")
+                            st.audio(audio_path, format="audio/mp3")
+                    else:
+                        st.warning("No text detected in the image.")
+
     elif action == 'Translate Audio':
         selected_language = st.sidebar.selectbox("Select Original Language", ['English', 'हिंदी', 'मराठी'])
         src_lang_codes = {'English': 'en-US', 'हिंदी': 'hi-IN', 'मराठी': 'mr-IN'}
@@ -155,6 +189,24 @@ def main():
 
             except Exception: 
                 st.write("Error: Unable to transcribe audio.")
+
+    elif action == 'Translate Text':
+    
+        languages = {"English": "en", "Hindi": "hi", "Marathi": "mr"}
+        target_language = st.selectbox("Select target language", list(languages.keys()))
+
+        input_text = st.text_area("Enter text to translate")
+
+        if st.button("Translate"):
+            if input_text.strip() != "":
+                translated_text = translation(input_text, languages[target_language])
+                st.success("Translated text:")
+                st.write(translated_text)
+
+                audio_path = text_to_speech(translated_text, f"audio/tts_{translated_text}.mp3")
+                st.audio(audio_path, format="audio/mp3")
+            else:
+                st.warning("Please enter text to translate")
 
 if __name__ == "__main__":
     main()
