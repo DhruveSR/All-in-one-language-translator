@@ -114,6 +114,9 @@ def main():
                         for l in lang:
                             trans_text = translation(text, l)
 
+                            st.subheader('Extracted Text')
+                            st.write(text)
+
                             st.subheader(f'Translated Text ({l})')
                             st.write(trans_text)
 
@@ -144,6 +147,9 @@ def main():
                     if text:
                         for l in lang:
                             trans_text = translation(text, l)
+
+                            st.subheader('Extracted Text')
+                            st.write(text)
 
                             st.subheader(f'Translated Text ({l})')
                             st.write(trans_text)
